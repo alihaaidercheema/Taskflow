@@ -8,6 +8,7 @@ from app.db.base_class import Base
 
 if TYPE_CHECKING:
     from app.models.user import User
+    from app.models.board import Board
 
 class Project(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
@@ -19,3 +20,8 @@ class Project(Base):
     )
 
     owner: Mapped["User"] = relationship("User", back_populates="projects")
+    boards: Mapped[List["Board"]] = relationship(
+        "Board",
+        back_populates="project",
+        cascade="all, delete-orphan",
+    )
