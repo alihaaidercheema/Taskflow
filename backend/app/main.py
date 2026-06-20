@@ -1,10 +1,14 @@
 from fastapi import FastAPI
 
+from app.api import auth
+
 app = FastAPI(
     title="TaskFlow API",
     description="A simple and clean task management API",
     version="1.0.0",
 )
+
+app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 
 @app.get("/")
 def read_root():
