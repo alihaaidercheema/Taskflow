@@ -8,6 +8,7 @@ from app.db.base_class import Base
 
 if TYPE_CHECKING:
     from app.models.project import Project
+    from app.models.task import Task
 
 class Board(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
@@ -19,8 +20,8 @@ class Board(Base):
 
     project: Mapped["Project"] = relationship("Project", back_populates="boards")
     
-    # tasks: Mapped[List["Task"]] = relationship(
-    #     "Task",
-    #     back_populates="board",
-    #     cascade="all, delete-orphan",
-    # )
+    tasks: Mapped[List["Task"]] = relationship(
+        "Task",
+        back_populates="board",
+        cascade="all, delete-orphan",
+    )
