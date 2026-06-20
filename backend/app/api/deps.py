@@ -8,6 +8,9 @@ from app.core.config import settings
 from app.core.security import ALGORITHM
 from app.db.session import get_db
 from app.models.user import User
+from app.models.project import Project
+from app.models.board import Board
+from app.models.task import Task
 from app.schemas.token import TokenData
 
 # The tokenUrl is relative or absolute to match '/auth/login'
@@ -43,3 +46,39 @@ def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
+def get_project(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Project:
+    project = db.query(Project).filter(Project.id == id).first()
+    if not project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+    if project.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
+    return project
+
+def get_board(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Board:
+    board = db.query(Board).filter(Board.id == id).first()
+    if not board:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Board not found")
+    if board.project.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
+    return board
+
+def get_task(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Task:
+    task = db.query(Task).filter(Task.id == id).first()
+    if not task:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+    if task.board.project.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
+    return task

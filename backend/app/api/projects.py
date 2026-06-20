@@ -19,7 +19,8 @@ def read_projects(
     current_user: User = Depends(deps.get_current_user),
 ) -> Any:
     """
-    Retrieve projects.
+    Retrieve a list of projects owned by the currently authenticated user.
+    Supports pagination via `skip` and `limit`.
     """
     projects = db.query(Project).filter(Project.owner_id == current_user.id).offset(skip).limit(limit).all()
     return projects
@@ -32,7 +33,8 @@ def create_project(
     current_user: User = Depends(deps.get_current_user),
 ) -> Any:
     """
-    Create new project.
+    Create a new project.
+    The created project will be automatically assigned to the current user.
     """
     project = Project(
         name=project_in.name,
@@ -46,38 +48,25 @@ def create_project(
 
 @router.get("/{id}", response_model=ProjectSchema)
 def read_project(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: int,
-    current_user: User = Depends(deps.get_current_user),
+    project: Project = Depends(deps.get_project),
 ) -> Any:
     """
-    Get project by ID.
+    Get a specific project by its ID.
+    Returns 404 if not found, and 403 if it does not belong to the user.
     """
-    project = db.query(Project).filter(Project.id == id).first()
-    if not project:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
-    if project.owner_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
     return project
 
 @router.put("/{id}", response_model=ProjectSchema)
 def update_project(
     *,
     db: Session = Depends(deps.get_db),
-    id: int,
     project_in: ProjectUpdate,
-    current_user: User = Depends(deps.get_current_user),
+    project: Project = Depends(deps.get_project),
 ) -> Any:
     """
-    Update a project.
+    Update a project's details by ID.
+    Only provided fields will be updated.
     """
-    project = db.query(Project).filter(Project.id == id).first()
-    if not project:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
-    if project.owner_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
-    
     update_data = project_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(project, field, value)
@@ -91,18 +80,12 @@ def update_project(
 def delete_project(
     *,
     db: Session = Depends(deps.get_db),
-    id: int,
-    current_user: User = Depends(deps.get_current_user),
+    project: Project = Depends(deps.get_project),
 ) -> Any:
     """
-    Delete a project.
+    Delete a project by ID.
+    This will also cascade delete all associated boards and tasks.
     """
-    project = db.query(Project).filter(Project.id == id).first()
-    if not project:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
-    if project.owner_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
-    
     db.delete(project)
     db.commit()
     return project

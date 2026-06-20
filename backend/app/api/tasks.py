@@ -23,7 +23,9 @@ def read_tasks(
     current_user: User = Depends(deps.get_current_user),
 ) -> Any:
     """
-    Retrieve tasks.
+    Retrieve a list of tasks.
+    Only returns tasks for boards in projects owned by the currently authenticated user.
+    Supports filtering by status and priority, and pagination via `skip` and `limit`.
     """
     query = (
         db.query(Task)
@@ -48,7 +50,8 @@ def create_task(
     current_user: User = Depends(deps.get_current_user),
 ) -> Any:
     """
-    Create new task.
+    Create a new task on a specific board.
+    Validates that the target board belongs to a project owned by the current user.
     """
     board = db.query(Board).filter(Board.id == task_in.board_id).first()
     if not board:
@@ -70,38 +73,25 @@ def create_task(
 
 @router.get("/{id}", response_model=TaskSchema)
 def read_task(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: int,
-    current_user: User = Depends(deps.get_current_user),
+    task: Task = Depends(deps.get_task),
 ) -> Any:
     """
-    Get task by ID.
+    Get a specific task by its ID.
+    Returns 404 if not found, and 403 if it belongs to a project not owned by the user.
     """
-    task = db.query(Task).filter(Task.id == id).first()
-    if not task:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
-    if task.board.project.owner_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
     return task
 
 @router.put("/{id}", response_model=TaskSchema)
 def update_task(
     *,
     db: Session = Depends(deps.get_db),
-    id: int,
     task_in: TaskUpdate,
-    current_user: User = Depends(deps.get_current_user),
+    task: Task = Depends(deps.get_task),
 ) -> Any:
     """
-    Update a task.
+    Update a task's details by ID.
+    Only provided fields will be updated.
     """
-    task = db.query(Task).filter(Task.id == id).first()
-    if not task:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
-    if task.board.project.owner_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
-    
     update_data = task_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(task, field, value)
@@ -115,18 +105,11 @@ def update_task(
 def delete_task(
     *,
     db: Session = Depends(deps.get_db),
-    id: int,
-    current_user: User = Depends(deps.get_current_user),
+    task: Task = Depends(deps.get_task),
 ) -> Any:
     """
-    Delete a task.
+    Delete a task by ID.
     """
-    task = db.query(Task).filter(Task.id == id).first()
-    if not task:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
-    if task.board.project.owner_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
-    
     db.delete(task)
     db.commit()
     return task

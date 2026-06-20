@@ -20,7 +20,8 @@ def read_boards(
     current_user: User = Depends(deps.get_current_user),
 ) -> Any:
     """
-    Retrieve boards.
+    Retrieve a list of boards.
+    Only returns boards for projects owned by the currently authenticated user.
     """
     boards = (
         db.query(Board)
@@ -40,7 +41,8 @@ def create_board(
     current_user: User = Depends(deps.get_current_user),
 ) -> Any:
     """
-    Create new board.
+    Create a new board in a project.
+    Validates that the target project belongs to the current user.
     """
     project = db.query(Project).filter(Project.id == board_in.project_id).first()
     if not project:
@@ -59,38 +61,25 @@ def create_board(
 
 @router.get("/{id}", response_model=BoardSchema)
 def read_board(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: int,
-    current_user: User = Depends(deps.get_current_user),
+    board: Board = Depends(deps.get_board),
 ) -> Any:
     """
-    Get board by ID.
+    Get a specific board by its ID.
+    Returns 404 if not found, and 403 if it belongs to a project not owned by the user.
     """
-    board = db.query(Board).filter(Board.id == id).first()
-    if not board:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Board not found")
-    if board.project.owner_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
     return board
 
 @router.put("/{id}", response_model=BoardSchema)
 def update_board(
     *,
     db: Session = Depends(deps.get_db),
-    id: int,
     board_in: BoardUpdate,
-    current_user: User = Depends(deps.get_current_user),
+    board: Board = Depends(deps.get_board),
 ) -> Any:
     """
-    Update a board.
+    Update a board's details by ID.
+    Only provided fields will be updated.
     """
-    board = db.query(Board).filter(Board.id == id).first()
-    if not board:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Board not found")
-    if board.project.owner_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
-    
     update_data = board_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(board, field, value)
@@ -104,18 +93,12 @@ def update_board(
 def delete_board(
     *,
     db: Session = Depends(deps.get_db),
-    id: int,
-    current_user: User = Depends(deps.get_current_user),
+    board: Board = Depends(deps.get_board),
 ) -> Any:
     """
-    Delete a board.
+    Delete a board by ID.
+    This will also cascade delete all associated tasks.
     """
-    board = db.query(Board).filter(Board.id == id).first()
-    if not board:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Board not found")
-    if board.project.owner_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
-    
     db.delete(board)
     db.commit()
     return board
