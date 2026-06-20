@@ -1,9 +1,12 @@
 from datetime import datetime
-from typing import List
+from typing import TYPE_CHECKING, List
 from sqlalchemy import String, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base_class import Base
+
+if TYPE_CHECKING:
+    from app.models.project import Project
 
 class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
@@ -15,9 +18,8 @@ class User(Base):
     )
 
     # Relationships
-    # One user has many projects. "Project" is referenced as a string until defined.
-    # projects: Mapped[List["Project"]] = relationship(
-    #     "Project",
-    #     back_populates="owner",
-    #     cascade="all, delete-orphan",
-    # )
+    projects: Mapped[List["Project"]] = relationship(
+        "Project",
+        back_populates="owner",
+        cascade="all, delete-orphan",
+    )
