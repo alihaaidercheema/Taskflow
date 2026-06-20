@@ -54,9 +54,11 @@ def read_project(
     """
     Get project by ID.
     """
-    project = db.query(Project).filter(Project.id == id, Project.owner_id == current_user.id).first()
+    project = db.query(Project).filter(Project.id == id).first()
     if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+    if project.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
     return project
 
 @router.put("/{id}", response_model=ProjectSchema)
@@ -70,9 +72,11 @@ def update_project(
     """
     Update a project.
     """
-    project = db.query(Project).filter(Project.id == id, Project.owner_id == current_user.id).first()
+    project = db.query(Project).filter(Project.id == id).first()
     if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+    if project.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
     
     update_data = project_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
@@ -93,9 +97,11 @@ def delete_project(
     """
     Delete a project.
     """
-    project = db.query(Project).filter(Project.id == id, Project.owner_id == current_user.id).first()
+    project = db.query(Project).filter(Project.id == id).first()
     if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+    if project.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
     
     db.delete(project)
     db.commit()

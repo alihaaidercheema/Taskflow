@@ -42,9 +42,11 @@ def create_board(
     """
     Create new board.
     """
-    project = db.query(Project).filter(Project.id == board_in.project_id, Project.owner_id == current_user.id).first()
+    project = db.query(Project).filter(Project.id == board_in.project_id).first()
     if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+    if project.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
         
     board = Board(
         name=board_in.name,
@@ -65,14 +67,11 @@ def read_board(
     """
     Get board by ID.
     """
-    board = (
-        db.query(Board)
-        .join(Project, Board.project_id == Project.id)
-        .filter(Board.id == id, Project.owner_id == current_user.id)
-        .first()
-    )
+    board = db.query(Board).filter(Board.id == id).first()
     if not board:
-        raise HTTPException(status_code=404, detail="Board not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Board not found")
+    if board.project.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
     return board
 
 @router.put("/{id}", response_model=BoardSchema)
@@ -86,14 +85,11 @@ def update_board(
     """
     Update a board.
     """
-    board = (
-        db.query(Board)
-        .join(Project, Board.project_id == Project.id)
-        .filter(Board.id == id, Project.owner_id == current_user.id)
-        .first()
-    )
+    board = db.query(Board).filter(Board.id == id).first()
     if not board:
-        raise HTTPException(status_code=404, detail="Board not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Board not found")
+    if board.project.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
     
     update_data = board_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
@@ -114,14 +110,11 @@ def delete_board(
     """
     Delete a board.
     """
-    board = (
-        db.query(Board)
-        .join(Project, Board.project_id == Project.id)
-        .filter(Board.id == id, Project.owner_id == current_user.id)
-        .first()
-    )
+    board = db.query(Board).filter(Board.id == id).first()
     if not board:
-        raise HTTPException(status_code=404, detail="Board not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Board not found")
+    if board.project.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
     
     db.delete(board)
     db.commit()
