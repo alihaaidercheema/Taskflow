@@ -19,9 +19,12 @@ export default function Login() {
       await login(formData);
       navigate("/dashboard");
     } catch (err) {
-      setError(
-        err.response?.data?.detail || "Invalid credentials. Please try again."
-      );
+      const detail = err.response?.data?.detail;
+      if (typeof detail === "string") {
+        setError(detail);
+      } else {
+        setError(`Login failed (${err.response?.status || "Network error"}). Please try again.`);
+      }
     } finally {
       setIsLoading(false);
     }

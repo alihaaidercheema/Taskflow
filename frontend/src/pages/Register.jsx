@@ -29,9 +29,15 @@ export default function Register() {
       await login({ email: formData.email, password: formData.password });
       navigate("/dashboard");
     } catch (err) {
-      setError(
-        err.response?.data?.detail || "Registration failed. Please try again."
-      );
+      const detail = err.response?.data?.detail;
+      if (Array.isArray(detail)) {
+        // Pydantic validation errors — show the first message
+        setError(detail[0]?.msg || "Validation error. Please check your inputs.");
+      } else if (typeof detail === "string") {
+        setError(detail);
+      } else {
+        setError(`Registration failed (${err.response?.status || "Network error"}). Please try again.`);
+      }
     } finally {
       setIsLoading(false);
     }
