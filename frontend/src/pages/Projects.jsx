@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   FolderKanban,
@@ -10,6 +10,8 @@ import {
   X,
   Loader2,
   Calendar,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { projectsService } from "../services";
 import { formatDate } from "../lib/utils";
@@ -183,10 +185,19 @@ export default function Projects() {
   const [editProject, setEditProject] = useState(null);
   const [deleteProject, setDeleteProject] = useState(null);
 
+  // Pagination state
+  const [limit, setLimit] = useState(10);
+  const [skip, setSkip] = useState(0);
+
+  // Reset skip when search term changes
+  useEffect(() => {
+    setSkip(0);
+  }, [search]);
+
   // ── Queries & Mutations ──
   const { data: projects = [], isLoading } = useQuery({
-    queryKey: ["projects"],
-    queryFn: () => projectsService.getAll().then((r) => r.data),
+    queryKey: ["projects", limit, skip],
+    queryFn: () => projectsService.getAll({ limit, skip }).then((r) => r.data),
   });
 
   const createMutation = useMutation({
@@ -227,7 +238,7 @@ export default function Projects() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Projects</h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            {isLoading ? "Loading..." : `${projects.length} project${projects.length !== 1 ? "s" : ""} total`}
+            Manage and organize your projects.
           </p>
         </div>
         <button
@@ -352,6 +363,32 @@ export default function Projects() {
           </table>
         </div>
       )}
+
+      {/* Pagination Controls */}
+      <div className="flex items-center justify-between border border-border bg-card p-4 rounded-xl shadow-xs text-xs text-muted-foreground mt-4">
+        <div>
+          Showing <span className="font-semibold text-foreground">{filtered.length}</span> projects
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setSkip(Math.max(0, skip - limit))}
+            disabled={skip === 0 || isLoading}
+            className="flex items-center justify-center w-8 h-8 rounded-md border border-border hover:bg-accent disabled:opacity-50 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <span className="font-medium text-foreground">
+            Skip: {skip} / Limit: {limit}
+          </span>
+          <button
+            onClick={() => setSkip(skip + limit)}
+            disabled={projects.length < limit || isLoading}
+            className="flex items-center justify-center w-8 h-8 rounded-md border border-border hover:bg-accent disabled:opacity-50 transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
 
       {/* Create Dialog */}
       <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Create Project">
