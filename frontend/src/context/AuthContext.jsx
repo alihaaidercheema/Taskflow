@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { authService } from "../services";
+import api from "../services/api";
 
 const AuthContext = createContext(null);
 
@@ -8,13 +9,20 @@ export function AuthProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Rehydrate user from localStorage on page refresh
+    // Rehydrate: if token exists, fetch current user profile from /auth/me
     const token = localStorage.getItem("access_token");
-    const storedUser = localStorage.getItem("user");
-    if (token && storedUser) {
-      setUser(JSON.parse(storedUser));
+    if (token) {
+      api
+        .get("/auth/me")
+        .then((res) => setUser(res.data))
+        .catch(() => {
+          // Token expired or invalid — clean up
+          localStorage.removeItem("access_token");
+        })
+        .finally(() => setIsLoading(false));
+    } else {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
 
   const login = async (credentials) => {
@@ -22,22 +30,19 @@ export function AuthProvider({ children }) {
     const { access_token } = response.data;
     localStorage.setItem("access_token", access_token);
 
-    // Decode user info from token payload (base64)
-    const payload = JSON.parse(atob(access_token.split(".")[1]));
-    const userData = { email: payload.sub };
-    localStorage.setItem("user", JSON.stringify(userData));
-    setUser(userData);
-    return response;
+    // Fetch full user profile from /auth/me
+    const meResponse = await api.get("/auth/me");
+    setUser(meResponse.data);
+    return meResponse.data;
   };
 
   const register = async (data) => {
     const response = await authService.register(data);
-    return response;
+    return response.data;
   };
 
   const logout = () => {
     localStorage.removeItem("access_token");
-    localStorage.removeItem("user");
     setUser(null);
   };
 

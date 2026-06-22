@@ -20,11 +20,11 @@ export default function Settings() {
         <h2 className="text-sm font-semibold">Profile</h2>
         <div className="flex items-center gap-4">
           <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary text-primary-foreground text-lg font-bold">
-            {user?.email?.[0]?.toUpperCase()}
+            {(user?.username || user?.email)?.[0]?.toUpperCase()}
           </div>
           <div>
-            <p className="text-sm font-medium">{user?.email}</p>
-            <p className="text-xs text-muted-foreground">Your account email</p>
+            <p className="text-sm font-medium">{user?.username}</p>
+            <p className="text-xs text-muted-foreground">{user?.email}</p>
           </div>
         </div>
       </div>
