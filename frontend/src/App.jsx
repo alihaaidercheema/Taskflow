@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { ToastProvider } from "./context/ToastContext";
 import { ProtectedRoute, PublicRoute } from "./routes/ProtectedRoute";
 import { MainLayout } from "./layouts/MainLayout";
 import { AuthLayout } from "./layouts/AuthLayout";
@@ -28,6 +29,7 @@ export default function App() {
       <ThemeProvider>
         <AuthProvider>
           <BrowserRouter>
+            <ToastProvider>
             <Routes>
               {/* Default redirect */}
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -54,6 +56,7 @@ export default function App() {
               {/* 404 fallback */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
+            </ToastProvider>
           </BrowserRouter>
         </AuthProvider>
       </ThemeProvider>

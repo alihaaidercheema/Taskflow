@@ -14,6 +14,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { projectsService } from "../services";
+import { useToast } from "../context/ToastContext";
 import { formatDate } from "../lib/utils";
 import { cn } from "../lib/utils";
 
@@ -180,6 +181,7 @@ function RowMenu({ onEdit, onDelete }) {
 
 export default function Projects() {
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [search, setSearch] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [editProject, setEditProject] = useState(null);
@@ -205,6 +207,10 @@ export default function Projects() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       setCreateOpen(false);
+      toast.success("Project created", "Your new project has been added.");
+    },
+    onError: (err) => {
+      toast.error("Failed to create project", err.response?.data?.detail || "Something went wrong.");
     },
   });
 
@@ -213,6 +219,10 @@ export default function Projects() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       setEditProject(null);
+      toast.success("Project updated", "Changes have been saved.");
+    },
+    onError: (err) => {
+      toast.error("Failed to update project", err.response?.data?.detail || "Something went wrong.");
     },
   });
 
@@ -221,6 +231,10 @@ export default function Projects() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       setDeleteProject(null);
+      toast.success("Project deleted", "The project and its contents have been removed.");
+    },
+    onError: (err) => {
+      toast.error("Failed to delete project", err.response?.data?.detail || "Something went wrong.");
     },
   });
 

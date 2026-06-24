@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { boardsService, projectsService } from "../services";
+import { useToast } from "../context/ToastContext";
 import { formatDate } from "../lib/utils";
 import { cn } from "../lib/utils";
 
@@ -241,6 +242,7 @@ function CardMenu({ onEdit, onDelete }) {
 
 export default function Boards() {
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [search, setSearch] = useState("");
   const [projectFilter, setProjectFilter] = useState("all");
   const [createOpen, setCreateOpen] = useState(false);
@@ -265,6 +267,10 @@ export default function Boards() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["boards"] });
       setCreateOpen(false);
+      toast.success("Board created", "Your new board has been added.");
+    },
+    onError: (err) => {
+      toast.error("Failed to create board", err.response?.data?.detail || "Something went wrong.");
     },
   });
 
@@ -274,6 +280,10 @@ export default function Boards() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["boards"] });
       setEditBoard(null);
+      toast.success("Board updated", "Changes have been saved.");
+    },
+    onError: (err) => {
+      toast.error("Failed to update board", err.response?.data?.detail || "Something went wrong.");
     },
   });
 
@@ -283,6 +293,10 @@ export default function Boards() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["boards"] });
       setDeleteBoard(null);
+      toast.success("Board deleted", "The board and its tasks have been removed.");
+    },
+    onError: (err) => {
+      toast.error("Failed to delete board", err.response?.data?.detail || "Something went wrong.");
     },
   });
 

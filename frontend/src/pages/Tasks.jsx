@@ -21,6 +21,7 @@ import {
   ClipboardList,
 } from "lucide-react";
 import { tasksService, boardsService, projectsService } from "../services";
+import { useToast } from "../context/ToastContext";
 import { formatDate } from "../lib/utils";
 import { cn } from "../lib/utils";
 
@@ -332,6 +333,7 @@ function ActionsMenu({ onEdit, onDelete }) {
 
 export default function Tasks() {
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [searchParams] = useSearchParams();
   const initialBoardParam = searchParams.get("board_id") || "all";
 
@@ -389,6 +391,10 @@ export default function Tasks() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       setCreateOpen(false);
+      toast.success("Task created", "Your new task has been added.");
+    },
+    onError: (err) => {
+      toast.error("Failed to create task", err.response?.data?.detail || "Something went wrong.");
     },
   });
 
@@ -397,6 +403,10 @@ export default function Tasks() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       setEditTask(null);
+      toast.success("Task updated", "Changes have been saved.");
+    },
+    onError: (err) => {
+      toast.error("Failed to update task", err.response?.data?.detail || "Something went wrong.");
     },
   });
 
@@ -405,13 +415,22 @@ export default function Tasks() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       setDeleteTask(null);
+      toast.success("Task deleted", "The task has been permanently removed.");
+    },
+    onError: (err) => {
+      toast.error("Failed to delete task", err.response?.data?.detail || "Something went wrong.");
     },
   });
 
   const quickStatusMutation = useMutation({
     mutationFn: ({ id, status }) => tasksService.update(id, { status }),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      const label = variables.status === "completed" ? "completed" : variables.status === "in_progress" ? "started" : "reopened";
+      toast.info("Status updated", `Task ${label} successfully.`);
+    },
+    onError: () => {
+      toast.error("Status update failed", "Could not update task status.");
     },
   });
 
