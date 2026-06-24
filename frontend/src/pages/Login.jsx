@@ -35,23 +35,23 @@ export default function Login() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-1">
-        <h2 className="text-2xl font-bold tracking-tight">Welcome back</h2>
-        <p className="text-muted-foreground text-sm">
-          Sign in to your TaskFlow account
+    <div className="rounded-xl border border-border bg-card p-8 shadow-lg space-y-6 border-t-2 border-t-primary">
+      <div className="space-y-1.5">
+        <h2 className="text-xl font-bold tracking-tight text-foreground">Welcome back</h2>
+        <p className="text-muted-foreground text-xs">
+          Sign in to your TaskFlow workspace
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="px-4 py-3 rounded-md bg-destructive/10 border border-destructive/20 text-sm text-destructive animate-fade-in">
+          <div className="px-4 py-2.5 rounded-lg bg-destructive/10 border border-destructive/20 text-xs text-destructive animate-fade-in font-medium">
             {error}
           </div>
         )}
 
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-foreground" htmlFor="email">
+          <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider" htmlFor="email">
             Email
           </label>
           <input
@@ -62,12 +62,12 @@ export default function Login() {
             value={formData.email}
             onChange={handleChange}
             placeholder="you@example.com"
-            className="w-full px-3 py-2 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring transition-all placeholder:text-muted-foreground"
+            className="w-full px-3 py-2 text-[13px] bg-background border border-input rounded-lg focus:outline-none focus:ring-1 focus:ring-ring transition-all placeholder:text-muted-foreground/60"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-foreground" htmlFor="password">
+          <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider" htmlFor="password">
             Password
           </label>
           <div className="relative">
@@ -79,7 +79,7 @@ export default function Login() {
               value={formData.password}
               onChange={handleChange}
               placeholder="••••••••"
-              className="w-full px-3 py-2 pr-10 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring transition-all placeholder:text-muted-foreground"
+              className="w-full px-3 py-2 pr-10 text-[13px] bg-background border border-input rounded-lg focus:outline-none focus:ring-1 focus:ring-ring transition-all placeholder:text-muted-foreground/60"
             />
             <button
               type="button"
@@ -94,16 +94,16 @@ export default function Login() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+          className="w-full h-9 flex items-center justify-center gap-2 mt-2 px-4 py-2 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/95 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-xs"
         >
-          {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-          {isLoading ? "Signing in..." : "Sign in"}
+          {isLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+          {isLoading ? "Signing in..." : "Sign In"}
         </button>
       </form>
 
-      <p className="text-center text-sm text-muted-foreground">
+      <p className="text-center text-xs text-muted-foreground">
         Don&apos;t have an account?{" "}
-        <Link to="/register" className="text-primary font-medium hover:underline">
+        <Link to="/register" className="text-primary font-semibold hover:underline">
           Create one
         </Link>
       </p>

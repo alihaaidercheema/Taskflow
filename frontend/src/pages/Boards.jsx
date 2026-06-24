@@ -13,7 +13,7 @@ import {
   FolderKanban,
   ExternalLink,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { boardsService, projectsService } from "../services";
 import { useToast } from "../context/ToastContext";
 import { formatDate } from "../lib/utils";
@@ -26,20 +26,20 @@ function Modal({ open, onClose, title, children }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+        className="absolute inset-0 bg-background/40 backdrop-blur-xs"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-md bg-card border border-border rounded-xl shadow-2xl animate-fade-in">
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border">
-          <h2 className="text-base font-semibold">{title}</h2>
+      <div className="relative w-full max-w-md bg-card border border-border rounded-xl shadow-xl animate-fade-in overflow-hidden">
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-border">
+          <h2 className="text-[14px] font-bold text-foreground">{title}</h2>
           <button
             onClick={onClose}
             className="text-muted-foreground hover:text-foreground transition-colors rounded-md p-1 hover:bg-accent"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
-        <div className="px-6 py-5">{children}</div>
+        <div className="px-6 py-5 bg-card">{children}</div>
       </div>
     </div>
   );
@@ -76,7 +76,7 @@ function BoardForm({ initialData, projects, onSubmit, onClose, isLoading }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-1.5">
-        <label className="text-sm font-medium">
+        <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
           Board Name <span className="text-destructive">*</span>
         </label>
         <input
@@ -88,7 +88,7 @@ function BoardForm({ initialData, projects, onSubmit, onClose, isLoading }) {
           }}
           placeholder="e.g. Sprint Backlog"
           className={cn(
-            "w-full px-3 py-2 text-sm bg-background border rounded-md focus:outline-none focus:ring-2 focus:ring-ring transition-all placeholder:text-muted-foreground",
+            "w-full px-3 py-2 text-[13px] bg-background border rounded-lg focus:outline-none focus:ring-1 focus:ring-ring transition-all placeholder:text-muted-foreground/60",
             errors.name ? "border-destructive" : "border-input"
           )}
         />
@@ -97,13 +97,13 @@ function BoardForm({ initialData, projects, onSubmit, onClose, isLoading }) {
 
       {!initialData && (
         <div className="space-y-1.5">
-          <label className="text-sm font-medium">
+          <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
             Project <span className="text-destructive">*</span>
           </label>
           {projects.length === 0 ? (
-            <div className="p-3 text-xs border border-dashed border-border rounded-md text-muted-foreground bg-muted/20">
+            <div className="p-3 text-xs border border-dashed border-border rounded-lg text-muted-foreground bg-muted/20">
               No projects available. You must{" "}
-              <Link to="/projects" className="text-primary hover:underline font-medium">
+              <Link to="/projects" className="text-primary hover:underline font-semibold">
                 create a project
               </Link>{" "}
               first.
@@ -116,7 +116,7 @@ function BoardForm({ initialData, projects, onSubmit, onClose, isLoading }) {
                 setErrors({});
               }}
               className={cn(
-                "w-full px-3 py-2 text-sm bg-background border rounded-md focus:outline-none focus:ring-2 focus:ring-ring transition-all",
+                "w-full px-3 py-2 text-[13px] bg-background border border-input rounded-lg focus:outline-none focus:ring-1 focus:ring-ring transition-all",
                 errors.projectId ? "border-destructive" : "border-input"
               )}
             >
@@ -133,11 +133,11 @@ function BoardForm({ initialData, projects, onSubmit, onClose, isLoading }) {
         </div>
       )}
 
-      <div className="flex items-center gap-3 pt-2">
+      <div className="flex items-center gap-2.5 pt-2">
         <button
           type="submit"
           disabled={isLoading || (projects.length === 0 && !initialData)}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60 transition-all"
+          className="flex items-center gap-1.5 h-9 px-4 py-2 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/95 disabled:opacity-60 transition-all shadow-xs"
         >
           {isLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
           {initialData ? "Save Changes" : "Create Board"}
@@ -145,7 +145,7 @@ function BoardForm({ initialData, projects, onSubmit, onClose, isLoading }) {
         <button
           type="button"
           onClick={onClose}
-          className="px-4 py-2 text-sm font-medium rounded-md border border-border hover:bg-accent transition-colors"
+          className="h-9 px-4 py-2 text-xs font-semibold rounded-lg border border-border hover:bg-accent text-foreground transition-colors"
         >
           Cancel
         </button>
@@ -158,22 +158,22 @@ function DeleteConfirmation({ board, onConfirm, onClose, isLoading }) {
   return (
     <div className="space-y-4">
       <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4">
-        <p className="text-sm text-destructive">
+        <p className="text-xs text-destructive font-medium leading-relaxed">
           This will permanently delete board <strong>&quot;{board.name}&quot;</strong> and all its tasks. This action cannot be undone.
         </p>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5">
         <button
           onClick={onConfirm}
           disabled={isLoading}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-60 transition-all"
+          className="flex items-center gap-1.5 h-9 px-4 py-2 text-xs font-semibold rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/95 disabled:opacity-60 transition-all"
         >
           {isLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
           Delete Board
         </button>
         <button
           onClick={onClose}
-          className="px-4 py-2 text-sm font-medium rounded-md border border-border hover:bg-accent transition-colors"
+          className="h-9 px-4 py-2 text-xs font-semibold rounded-lg border border-border hover:bg-accent text-foreground transition-colors"
         >
           Cancel
         </button>
@@ -194,9 +194,9 @@ function CardMenu({ onEdit, onDelete }) {
           e.stopPropagation();
           setOpen((o) => !o);
         }}
-        className="flex items-center justify-center w-8 h-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+        className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
       >
-        <MoreHorizontal className="w-4 h-4" />
+        <MoreHorizontal className="w-3.5 h-3.5" />
       </button>
       {open && (
         <>
@@ -208,7 +208,7 @@ function CardMenu({ onEdit, onDelete }) {
               setOpen(false);
             }}
           />
-          <div className="absolute right-0 top-full mt-1 w-40 bg-popover border border-border rounded-md shadow-lg z-20 overflow-hidden animate-fade-in">
+          <div className="absolute right-0 top-full mt-1 w-36 bg-card border border-border rounded-lg shadow-lg z-20 overflow-hidden animate-fade-in p-1">
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -216,7 +216,7 @@ function CardMenu({ onEdit, onDelete }) {
                 onEdit();
                 setOpen(false);
               }}
-              className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors text-left"
+              className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs font-medium rounded-md text-foreground hover:bg-accent transition-colors text-left"
             >
               <Pencil className="w-3.5 h-3.5" /> Edit
             </button>
@@ -227,7 +227,7 @@ function CardMenu({ onEdit, onDelete }) {
                 onDelete();
                 setOpen(false);
               }}
-              className="flex items-center gap-2 w-full px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors text-left"
+              className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs font-medium rounded-md text-destructive hover:bg-destructive/10 transition-colors text-left"
             >
               <Trash2 className="w-3.5 h-3.5" /> Delete
             </button>
@@ -241,6 +241,7 @@ function CardMenu({ onEdit, onDelete }) {
 // ─── Main Boards Page ────────────────────────────────────────────────────────
 
 export default function Boards() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const toast = useToast();
   const [search, setSearch] = useState("");
@@ -318,21 +319,21 @@ export default function Boards() {
   const isLoading = boardsLoading || projectsLoading;
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 max-w-7xl mx-auto animate-fade-in">
       {/* Page Header */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4 pb-2 border-b border-border/60">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Boards</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
+          <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">Boards</h1>
+          <p className="text-xs text-muted-foreground mt-0.5 sm:text-sm">
             {isLoading ? "Loading..." : `${boards.length} board${boards.length !== 1 ? "s" : ""} total`}
           </p>
         </div>
         <button
           onClick={() => setCreateOpen(true)}
           disabled={projects.length === 0}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-sm disabled:opacity-50"
+          className="flex items-center gap-1.5 h-9 px-4 py-2 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/95 transition-all shadow-xs disabled:opacity-50"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-3.5 h-3.5" />
           New Board
         </button>
       </div>
@@ -346,7 +347,7 @@ export default function Boards() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search boards..."
-            className="pl-9 pr-8 py-2 w-full text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring transition-all placeholder:text-muted-foreground"
+            className="pl-9 pr-8 py-1.5 w-full text-[13px] bg-card border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-ring transition-all placeholder:text-muted-foreground/60"
           />
           {search && (
             <button
@@ -363,7 +364,7 @@ export default function Boards() {
           <select
             value={projectFilter}
             onChange={(e) => setProjectFilter(e.target.value)}
-            className="w-full px-3 py-2 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+            className="w-full px-3 py-1.5 text-xs bg-card border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-ring transition-all font-medium text-foreground"
           >
             <option value="all">All Projects</option>
             {projects.map((p) => (
@@ -375,13 +376,13 @@ export default function Boards() {
         </div>
       </div>
 
-      {/* Cards Layout */}
+      {/* Cards Grid */}
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="rounded-xl border border-border bg-card p-5 h-40 flex flex-col justify-between shadow-sm animate-pulse"
+              className="rounded-xl border border-border bg-card p-5 h-36 flex flex-col justify-between shadow-xs animate-pulse"
             >
               <div className="space-y-2">
                 <div className="h-4 w-28 bg-muted rounded" />
@@ -392,25 +393,25 @@ export default function Boards() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border p-16 text-center">
-          <LayoutGrid className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+        <div className="rounded-xl border border-dashed border-border p-16 text-center bg-card/30">
+          <LayoutGrid className="w-10 h-10 mx-auto text-muted-foreground/60 mb-3" />
           {search || projectFilter !== "all" ? (
             <>
-              <p className="text-sm font-medium">No boards match your filters</p>
+              <p className="text-sm font-semibold text-foreground">No boards match your filters</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Try clearing your search or choosing a different project.
+                Try clearing your search query or choosing a different project.
               </p>
             </>
           ) : (
             <>
-              <p className="text-sm font-medium">No boards yet</p>
+              <p className="text-sm font-semibold text-foreground">No boards yet</p>
               <p className="text-xs text-muted-foreground mt-1">
                 Create a board to start organizing tasks inside your projects.
               </p>
               <button
                 onClick={() => setCreateOpen(true)}
                 disabled={projects.length === 0}
-                className="mt-4 flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all mx-auto disabled:opacity-50"
+                className="mt-4 flex items-center gap-1.5 h-9 px-4 py-2 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/95 transition-all mx-auto disabled:opacity-50"
               >
                 <Plus className="w-3.5 h-3.5" /> New Board
               </button>
@@ -418,22 +419,23 @@ export default function Boards() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((board) => {
             const project = projectMap.get(board.project_id);
             return (
               <div
                 key={board.id}
-                className="group relative rounded-xl border border-border bg-card p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between h-40 cursor-pointer"
+                onClick={() => navigate(`/tasks?board_id=${board.id}`)}
+                className="group relative rounded-xl border border-border bg-card p-5 shadow-xs hover:shadow-md hover:border-muted-foreground/30 transition-all duration-200 flex flex-col justify-between h-36 cursor-pointer"
               >
-                <div className="space-y-1.5 pr-6">
+                <div className="space-y-2 pr-6">
                   {/* Board Title */}
-                  <h3 className="font-semibold text-foreground tracking-tight line-clamp-1 group-hover:text-primary transition-colors">
+                  <h3 className="font-bold text-[15px] text-foreground tracking-tight line-clamp-1 group-hover:text-primary transition-colors">
                     {board.name}
                   </h3>
 
                   {/* Project association Badge */}
-                  <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 border border-border rounded-md px-2 py-0.5">
+                  <div className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground bg-muted/40 border border-border/80 rounded-md px-2 py-0.5 font-semibold">
                     <FolderKanban className="w-3 h-3 text-primary" />
                     <span className="truncate max-w-[150px]">
                       {project?.name || "Unknown Project"}
@@ -442,9 +444,9 @@ export default function Boards() {
                 </div>
 
                 {/* Card Footer: Metadata & Link */}
-                <div className="flex items-center justify-between border-t border-border/50 pt-3 mt-4 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
+                <div className="flex items-center justify-between border-t border-border/50 pt-2.5 mt-3 text-[11px] text-muted-foreground font-medium">
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-muted-foreground/80" />
                     {formatDate(board.created_at)}
                   </span>
                   
@@ -452,14 +454,14 @@ export default function Boards() {
                   <Link
                     to={`/tasks?board_id=${board.id}`}
                     onClick={(e) => e.stopPropagation()}
-                    className="flex items-center gap-0.5 text-primary opacity-0 group-hover:opacity-100 transition-opacity font-medium hover:underline"
+                    className="flex items-center gap-0.5 text-primary opacity-0 group-hover:opacity-100 transition-opacity font-semibold"
                   >
-                    View tasks <ExternalLink className="w-3 h-3" />
+                    View tasks <ExternalLink className="w-3 h-3 ml-0.5" />
                   </Link>
                 </div>
 
                 {/* Dropdown Menu positioning */}
-                <div className="absolute top-4 right-4">
+                <div className="absolute top-4 right-4" onClick={(e) => e.stopPropagation()}>
                   <CardMenu
                     onEdit={() => setEditBoard(board)}
                     onDelete={() => setDeleteBoard(board)}
@@ -480,7 +482,7 @@ export default function Boards() {
           isLoading={createMutation.isPending}
         />
         {createMutation.isError && (
-          <p className="mt-3 text-sm text-destructive">
+          <p className="mt-3 text-xs font-medium text-destructive">
             {createMutation.error?.response?.data?.detail || "Failed to create board."}
           </p>
         )}
@@ -498,7 +500,7 @@ export default function Boards() {
               isLoading={editMutation.isPending}
             />
             {editMutation.isError && (
-              <p className="mt-3 text-sm text-destructive">
+              <p className="mt-3 text-xs font-medium text-destructive">
                 {editMutation.error?.response?.data?.detail || "Failed to update board."}
               </p>
             )}

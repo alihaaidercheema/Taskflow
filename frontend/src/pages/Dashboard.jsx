@@ -12,17 +12,7 @@ import { projectsService, tasksService } from "../services";
 import { useAuth } from "../context/AuthContext";
 import { cn, formatRelativeTime } from "../lib/utils";
 
-const PRIORITY_STYLES = {
-  high: "bg-red-500/10 text-red-500 border-red-500/20",
-  medium: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
-  low: "bg-green-500/10 text-green-500 border-green-500/20",
-};
 
-const STATUS_STYLES = {
-  todo: "bg-muted text-muted-foreground",
-  in_progress: "bg-blue-500/10 text-blue-500",
-  completed: "bg-green-500/10 text-green-500",
-};
 
 const STATUS_LABELS = {
   todo: "To Do",
@@ -32,23 +22,23 @@ const STATUS_LABELS = {
 
 function StatCard({ title, value, icon: Icon, color, description, isLoading }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+    <div className="rounded-xl border border-border bg-card p-5 shadow-xs hover:shadow-md hover:border-muted-foreground/30 transition-all duration-200 group">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-medium text-muted-foreground">{title}</span>
-        <div className={cn("flex items-center justify-center w-9 h-9 rounded-lg", color)}>
+        <span className="text-[13px] font-medium text-muted-foreground">{title}</span>
+        <div className={cn("flex items-center justify-center w-8 h-8 rounded-lg transition-all group-hover:scale-105", color)}>
           <Icon className="w-4 h-4" />
         </div>
       </div>
       {isLoading ? (
         <div className="space-y-2">
-          <div className="h-8 w-16 bg-muted rounded animate-pulse" />
-          <div className="h-3 w-24 bg-muted rounded animate-pulse" />
+          <div className="h-7 w-16 bg-muted rounded animate-pulse" />
+          <div className="h-3.5 w-24 bg-muted rounded animate-pulse" />
         </div>
       ) : (
         <>
-          <p className="text-3xl font-bold tracking-tight">{value ?? 0}</p>
+          <p className="text-2xl font-bold tracking-tight text-foreground">{value ?? 0}</p>
           {description && (
-            <p className="text-xs text-muted-foreground mt-1">{description}</p>
+            <p className="text-[11px] text-muted-foreground mt-1.5 font-medium">{description}</p>
           )}
         </>
       )}
@@ -97,7 +87,7 @@ export default function Dashboard() {
       title: "Total Projects",
       value: projects?.length,
       icon: FolderKanban,
-      color: "bg-violet-500/10 text-violet-500",
+      color: "bg-violet-500/10 text-violet-500 border border-violet-500/10",
       description: "Active workspaces",
       isLoading: projectsLoading,
     },
@@ -105,7 +95,7 @@ export default function Dashboard() {
       title: "Active Tasks",
       value: activeTasks,
       icon: TrendingUp,
-      color: "bg-orange-500/10 text-orange-500",
+      color: "bg-blue-500/10 text-blue-500 border border-blue-500/10",
       description: "Tasks in progress",
       isLoading: tasksLoading,
     },
@@ -113,7 +103,7 @@ export default function Dashboard() {
       title: "Completed",
       value: completedTasks,
       icon: CheckSquare,
-      color: "bg-green-500/10 text-green-500",
+      color: "bg-emerald-500/10 text-emerald-600 border border-emerald-500/10",
       description: "Tasks finished",
       isLoading: tasksLoading,
     },
@@ -121,7 +111,7 @@ export default function Dashboard() {
       title: "High Priority",
       value: highPriorityTasks,
       icon: AlertTriangle,
-      color: "bg-red-500/10 text-red-500",
+      color: "bg-rose-500/10 text-rose-500 border border-rose-500/10",
       description: "Needs attention",
       isLoading: tasksLoading,
     },
@@ -132,20 +122,20 @@ export default function Dashboard() {
     hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6 max-w-7xl mx-auto">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pb-2 border-b border-border/60">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
             {greeting}, {user?.username || "there"} 👋
           </h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Here&apos;s what&apos;s happening in your workspace today.
+          <p className="text-xs text-muted-foreground mt-0.5 sm:text-sm">
+            Here&apos;s a quick overview of your workspace today.
           </p>
         </div>
         <Link
           to="/projects"
-          className="hidden sm:flex items-center gap-1.5 text-sm text-primary font-medium hover:underline"
+          className="hidden sm:flex items-center gap-1 text-xs text-primary font-semibold hover:underline"
         >
           View all projects <ArrowRight className="w-3.5 h-3.5" />
         </Link>
@@ -163,9 +153,9 @@ export default function Dashboard() {
         {/* Recent Tasks */}
         <div className="lg:col-span-3 space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold">Recent Tasks</h2>
-            <Link to="/tasks" className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1">
-              View all <ArrowRight className="w-3 h-3" />
+            <h2 className="text-sm font-semibold tracking-tight text-foreground">Recent Tasks</h2>
+            <Link to="/tasks" className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 font-medium">
+              View all <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
@@ -174,32 +164,41 @@ export default function Dashboard() {
               {[1, 2, 3, 4].map((i) => <SkeletonRow key={i} />)}
             </div>
           ) : !recentTasks?.length ? (
-            <div className="rounded-xl border border-dashed border-border p-10 text-center">
-              <CheckSquare className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">No tasks yet. Create your first task!</p>
+            <div className="rounded-xl border border-dashed border-border p-12 text-center bg-card/30">
+              <CheckSquare className="w-8 h-8 mx-auto text-muted-foreground/60 mb-2.5" />
+              <p className="text-sm font-medium text-foreground">No tasks yet</p>
+              <p className="text-xs text-muted-foreground mt-1">Get started by creating your first task in the Tasks page.</p>
             </div>
           ) : (
             <div className="space-y-2">
               {recentTasks.map((task) => (
                 <div
                   key={task.id}
-                  className="flex items-center justify-between px-4 py-3 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors gap-4"
+                  className="flex items-center justify-between px-4 py-3 rounded-lg border border-border bg-card hover:bg-accent/30 hover:border-muted-foreground/20 transition-all duration-150 gap-4"
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <Circle className={cn("w-2 h-2 shrink-0 fill-current", {
                       "text-muted-foreground": task.status === "todo",
                       "text-blue-500": task.status === "in_progress",
-                      "text-green-500": task.status === "completed",
+                      "text-emerald-500": task.status === "completed",
                     })} />
-                    <p className={cn("text-sm font-medium truncate", task.status === "completed" && "line-through text-muted-foreground")}>
+                    <p className={cn("text-[13px] font-semibold truncate text-foreground", task.status === "completed" && "line-through text-muted-foreground/70")}>
                       {task.title}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className={cn("text-xs px-2 py-0.5 rounded-full border font-medium", PRIORITY_STYLES[task.priority])}>
+                    <span className={cn("text-[10px] px-2 py-0.5 rounded-full border font-semibold uppercase tracking-wider", 
+                      task.priority === "high" ? "bg-rose-500/10 text-rose-500 border-rose-500/10" :
+                      task.priority === "medium" ? "bg-amber-500/10 text-amber-600 border-amber-500/10" :
+                      "bg-zinc-500/10 text-zinc-500 border-zinc-500/10"
+                    )}>
                       {task.priority}
                     </span>
-                    <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", STATUS_STYLES[task.status])}>
+                    <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-semibold border", 
+                      task.status === "todo" ? "bg-zinc-500/10 text-zinc-500 border-zinc-500/10" :
+                      task.status === "in_progress" ? "bg-blue-500/10 text-blue-500 border-blue-500/10" :
+                      "bg-emerald-500/10 text-emerald-600 border-emerald-500/10"
+                    )}>
                       {STATUS_LABELS[task.status]}
                     </span>
                   </div>
@@ -212,40 +211,41 @@ export default function Dashboard() {
         {/* Recent Projects */}
         <div className="lg:col-span-2 space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold">Recent Projects</h2>
-            <Link to="/projects" className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1">
-              View all <ArrowRight className="w-3 h-3" />
+            <h2 className="text-sm font-semibold tracking-tight text-foreground">Recent Projects</h2>
+            <Link to="/projects" className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 font-medium">
+              View all <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
           {projectsLoading ? (
             <div className="space-y-2">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-16 rounded-lg bg-muted animate-pulse" />
+                <div key={i} className="h-14 rounded-lg bg-muted animate-pulse" />
               ))}
             </div>
           ) : !projects?.length ? (
-            <div className="rounded-xl border border-dashed border-border p-10 text-center">
-              <FolderKanban className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">No projects yet.</p>
+            <div className="rounded-xl border border-dashed border-border p-12 text-center bg-card/30">
+              <FolderKanban className="w-8 h-8 mx-auto text-muted-foreground/60 mb-2.5" />
+              <p className="text-sm font-medium text-foreground">No projects yet</p>
+              <p className="text-xs text-muted-foreground mt-1">Create projects on the Projects page.</p>
             </div>
           ) : (
             <div className="space-y-2">
               {projects.slice(0, 5).map((project, i) => (
                 <div
                   key={project.id}
-                  className="px-4 py-3 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors"
+                  className="px-4 py-3 rounded-lg border border-border bg-card hover:bg-accent/30 hover:border-muted-foreground/20 transition-all duration-150"
                 >
                   <div className="flex items-center gap-3">
                     <div className={cn(
-                      "w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold text-white shrink-0",
-                      ["bg-violet-500", "bg-blue-500", "bg-green-500", "bg-orange-500", "bg-pink-500"][i % 5]
+                      "w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold text-white shrink-0 shadow-xs",
+                      ["bg-violet-600", "bg-blue-600", "bg-emerald-600", "bg-amber-600", "bg-rose-600"][i % 5]
                     )}>
                       {project.name[0]?.toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{project.name}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-[13px] font-semibold text-foreground truncate">{project.name}</p>
+                      <p className="text-[10px] text-muted-foreground font-medium mt-0.5">
                         {formatRelativeTime(project.created_at)}
                       </p>
                     </div>
