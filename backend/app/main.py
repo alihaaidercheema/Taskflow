@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -12,13 +13,16 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Default origins for local development.
+# In production, set ALLOWED_ORIGINS as a comma-separated env var in Railway:
+#   e.g. ALLOWED_ORIGINS=https://your-frontend.up.railway.app,https://yourapp.vercel.app
+_default_origins = "http://localhost:3000,http://localhost:5173"
+_origins_env = os.getenv("ALLOWED_ORIGINS", _default_origins)
+allowed_origins = [o.strip() for o in _origins_env.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "https://taskflow-api-production-dfba.up.railway.app",
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
