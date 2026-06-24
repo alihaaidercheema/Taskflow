@@ -337,6 +337,7 @@ export default function Tasks() {
 
   // Views Toggle ("table" or "card")
   const [viewMode, setViewMode] = useState("card");
+  const [activeDropCol, setActiveDropCol] = useState(null);
 
   // Filters
   const [search, setSearch] = useState("");
@@ -414,6 +415,39 @@ export default function Tasks() {
     },
   });
 
+  // Drag and Drop handlers
+  const handleDragStart = (e, taskId) => {
+    e.dataTransfer.setData("text/plain", taskId);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDragEnter = (e, status) => {
+    e.preventDefault();
+    setActiveDropCol(status);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    // Reset hover class when leaving the column
+    setActiveDropCol(null);
+  };
+
+  const handleDrop = (e, newStatus) => {
+    e.preventDefault();
+    setActiveDropCol(null);
+    const taskId = Number(e.dataTransfer.getData("text/plain"));
+    if (taskId) {
+      const taskObj = filteredTasks.find((t) => t.id === taskId);
+      if (taskObj && taskObj.status !== newStatus) {
+        quickStatusMutation.mutate({ id: taskId, status: newStatus });
+      }
+    }
+  };
+
   // Fast mapping utilities
   const boardMap = useMemo(() => new Map(boards.map((b) => [b.id, b])), [boards]);
   const projectMap = useMemo(() => new Map(projects.map((p) => [p.id, p])), [projects]);
@@ -475,7 +509,11 @@ export default function Tasks() {
     const project = board ? projectMap.get(board.project_id) : null;
 
     return (
-      <div className="group relative rounded-xl border border-border bg-card p-4 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between space-y-3">
+      <div
+        draggable
+        onDragStart={(e) => handleDragStart(e, task.id)}
+        className="group relative rounded-xl border border-border bg-card p-4 shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] active:cursor-grabbing transition-all duration-200 flex flex-col justify-between space-y-3 cursor-grab"
+      >
         <div className="space-y-1.5">
           <div className="flex items-start justify-between gap-4 pr-6">
             <h4 className="font-semibold text-sm text-foreground tracking-tight group-hover:text-primary transition-colors line-clamp-2">
@@ -728,9 +766,27 @@ export default function Tasks() {
         </div>
       ) : viewMode === "card" ? (
         /* Board / Kanban View */
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+        <>
+          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1 bg-muted border border-border px-2 py-0.5 rounded-md font-medium">
+              ✦ Drag
+            </span>
+            cards between columns to update their status instantly.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
           {/* To Do Column */}
-          <div className="space-y-4 bg-muted/20 border border-border/80 p-4 rounded-xl min-h-[300px]">
+          <div
+            onDragOver={handleDragOver}
+            onDragEnter={(e) => handleDragEnter(e, "todo")}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => handleDrop(e, "todo")}
+            className={cn(
+              "space-y-4 border p-4 rounded-xl min-h-[300px] transition-all duration-150",
+              activeDropCol === "todo"
+                ? "bg-muted/50 border-muted-foreground/30 ring-2 ring-muted-foreground/20 scale-[1.01]"
+                : "bg-muted/20 border-border/80"
+            )}
+          >
             <div className="flex items-center justify-between border-b border-border/80 pb-2">
               <h3 className="font-semibold text-sm flex items-center gap-2 text-foreground">
                 <span className="w-2 h-2 rounded-full bg-muted-foreground/80" />
@@ -741,6 +797,11 @@ export default function Tasks() {
               </span>
             </div>
             <div className="space-y-3">
+              {groupedTasks.todo.length === 0 && activeDropCol === "todo" && (
+                <div className="border-2 border-dashed border-muted-foreground/20 rounded-lg h-20 flex items-center justify-center text-xs text-muted-foreground">
+                  Drop here
+                </div>
+              )}
               {groupedTasks.todo.map((task) => (
                 <TaskCard key={task.id} task={task} />
               ))}
@@ -748,7 +809,18 @@ export default function Tasks() {
           </div>
 
           {/* In Progress Column */}
-          <div className="space-y-4 bg-muted/20 border border-border/80 p-4 rounded-xl min-h-[300px]">
+          <div
+            onDragOver={handleDragOver}
+            onDragEnter={(e) => handleDragEnter(e, "in_progress")}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => handleDrop(e, "in_progress")}
+            className={cn(
+              "space-y-4 border p-4 rounded-xl min-h-[300px] transition-all duration-150",
+              activeDropCol === "in_progress"
+                ? "bg-blue-500/5 border-blue-400/40 ring-2 ring-blue-400/20 scale-[1.01]"
+                : "bg-muted/20 border-border/80"
+            )}
+          >
             <div className="flex items-center justify-between border-b border-border/80 pb-2">
               <h3 className="font-semibold text-sm flex items-center gap-2 text-foreground">
                 <span className="w-2 h-2 rounded-full bg-blue-500" />
@@ -759,6 +831,11 @@ export default function Tasks() {
               </span>
             </div>
             <div className="space-y-3">
+              {groupedTasks.in_progress.length === 0 && activeDropCol === "in_progress" && (
+                <div className="border-2 border-dashed border-blue-400/30 rounded-lg h-20 flex items-center justify-center text-xs text-blue-400">
+                  Drop here
+                </div>
+              )}
               {groupedTasks.in_progress.map((task) => (
                 <TaskCard key={task.id} task={task} />
               ))}
@@ -766,7 +843,18 @@ export default function Tasks() {
           </div>
 
           {/* Completed Column */}
-          <div className="space-y-4 bg-muted/20 border border-border/80 p-4 rounded-xl min-h-[300px]">
+          <div
+            onDragOver={handleDragOver}
+            onDragEnter={(e) => handleDragEnter(e, "completed")}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => handleDrop(e, "completed")}
+            className={cn(
+              "space-y-4 border p-4 rounded-xl min-h-[300px] transition-all duration-150",
+              activeDropCol === "completed"
+                ? "bg-green-500/5 border-green-400/40 ring-2 ring-green-400/20 scale-[1.01]"
+                : "bg-muted/20 border-border/80"
+            )}
+          >
             <div className="flex items-center justify-between border-b border-border/80 pb-2">
               <h3 className="font-semibold text-sm flex items-center gap-2 text-foreground">
                 <span className="w-2 h-2 rounded-full bg-green-500" />
@@ -777,12 +865,18 @@ export default function Tasks() {
               </span>
             </div>
             <div className="space-y-3">
+              {groupedTasks.completed.length === 0 && activeDropCol === "completed" && (
+                <div className="border-2 border-dashed border-green-400/30 rounded-lg h-20 flex items-center justify-center text-xs text-green-400">
+                  Drop here
+                </div>
+              )}
               {groupedTasks.completed.map((task) => (
                 <TaskCard key={task.id} task={task} />
               ))}
             </div>
           </div>
         </div>
+        </>
       ) : (
         /* Table / List View */
         <div className="rounded-xl border border-border overflow-hidden shadow-sm">
